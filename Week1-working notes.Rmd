@@ -1,0 +1,310 @@
+---
+title: "Week 1 Activities"
+author: "MrCheerful"
+date: "April 11, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Week 1 - Project Overview
+
+Around the world, people are spending an increasing amount of time on their mobile devices for email, social networking, banking and a whole range of other activities. But typing on mobile devices can be a serious pain. SwiftKey, our corporate partner in this capstone, builds a smart keyboard that makes it easier for people to type on their mobile devices. One cornerstone of their smart keyboard is predictive text models. When someone types:
+
+  I went to the
+
+the keyboard presents three options for what the next word might be. For example, the three words might be gym, store, restaurant. In this capstone you will work on understanding and building predictive text models like those used by SwiftKey.
+
+This course will start with the basics, analyzing a large corpus of text documents to discover the structure in the data and how words are put together. It will cover cleaning and analyzing text data, then building and sampling from a predictive text model. Finally, you will use the knowledge you gained in data products to build a predictive text product you can show off to your family, friends, and potential employers.
+
+You will use all of the skills you have learned during the Data Science Specialization in this course, but you'll notice that we are tackling a brand new application: analysis of text data and natural language processing. This choice is on purpose. As a practicing data scientist you will be frequently confronted with new data types and problems. A big part of the fun and challenge of being a data scientist is figuring out how to work with these new data types to build data products people love. The capstone will be evaluated based on the following assessments:
+
+An introductory quiz to test whether you have downloaded and can manipulate the data.
+An intermediate R markdown report that describes in plain language, plots, and code your exploratory analysis of the course data set.
+Two natural language processing quizzes, where you apply your predictive model to real data to check how it is working.
+A Shiny app that takes as input a phrase (multiple words), one clicks submit, and it predicts the next word.
+A 5 slide deck created with R presentations pitching your algorithm and app to your boss or investor.
+During the capstone you can get support from your fellow students, from us, and from the engineers at SwiftKey. But we really want you to show your independence, creativity, and initiative. We have been incredibly impressed by your performance in the classes up until now and know you can do great things.
+
+We have compiled some basic natural language processing resources below. You are welcome to use these resources or any others you can find while performing this analysis. One thing to keep in mind is that we do not expect you to become a world's expert in natural language processing. The point of this capstone is for you to show you can explore a new data type, quickly get up to speed on a new application, and implement a useful model in a reasonable period of time. We think NLP is very cool and depending on your future goals may be worth studying more in-depth, but you can complete this project by using your general knowledge of data science and basic knowledge of NLP.
+
+Here are a few resources that might be good places to start as you tackle this ambitious project.
+
+[Text mining infrastucture in R](http://www.jstatsoft.org/v25/i05/)
+
+[CRAN Task View: Natural Language Processing](http://cran.r-project.org/web/views/NaturalLanguageProcessing.html)
+
+[Stanford Natural Language Processing MOOC (starts September 2016)](https://www.coursera.org/learn/nlp) - seems to be a broken link
+
+
+## Week1 - Syllabus
+
+### Course Title
+
+Data Science Specialization SwiftKey Capstone
+
+### Course Instructor(s)
+
+[Jeff Leek](http://jtleek.com/)
+[Roger Peng](http://www.biostat.jhsph.edu/~rpeng/)
+[Brian Caffo](http://www.bcaffo.com/)
+
+### You are a data scientist now
+
+The goal of this data science specialization has been to give you the basic skills involved with being a data scientist. The goal of this capstone is to mimic the experience of being a data scientist. As a practicing data scientist it is entirely common to get a messy data set, a vague question, and very little instruction on exactly how to analyze the data. Our goal is to give you that same experience but with added support in the form of forums, discussion with instructors, feedback from SwiftKey and Coursera engineers, and a structured problem to solve. We hope that you will take advantage of the opportunity this project affords for you to demonstrate your skills and creativity.
+
+### Course Tasks
+
+This course will be separated into 8 different tasks that cover the range of activities encountered by a practicing data scientist. They mirror many of the skills you have developed in the data science specialization. The tasks are:
+
+* Understanding the problem
+* Data acquisition and cleaning
+* Exploratory analysis
+* Statistical modeling
+* Predictive modeling
+* Creative exploration
+* Creating a data product
+* Creating a short slide deck pitching your product
+
+You will hear about each of these tasks over the course of the capstone.
+
+### Assessements and Grading
+
+To successfully complete the capstone project, you must receive a passing grade on all of the following assignments:
+
+1. Quiz 1: Getting Started
+2. Milestone Report: exploratory analysis of the data set + evaluation of at least three classmate submissions
+3. Quiz 2: Natural Language Processing I
+4. Quiz 3: Natural Language Processing II
+5. Final Project: your data product and a presentation describing your final data product + evaluation of at least three classmate submissions
+6. The quizzes will be standard multiple choice quizzes. The other components are graded by peer evaluation.
+
+Your final grade will be calculated as follows
+
+Quiz 1 - 5%
+Milestone Report - 20%
+Quiz 2 - 10%
+Quiz 3 -10%
+Final Project -55%
+Course dataset
+
+This is the training data to get you started that will be the basis for most of the capstone. You must download the data from the link below and not from external websites to start.
+
+https://d396qusza40orc.cloudfront.net/dsscapstone/dataset/Coursera-SwiftKey.zip
+
+Later in the course you may use external data sets to augment your model as you see fit.
+
+### Differences of opinion
+
+Keep in mind that currently data analysis is as much art as it is science - so we may have a difference of opinion - and that is ok! Please refrain from angry, sarcastic, or abusive comments on the message boards. Our goal is to create a supportive community that helps the learning of all students, from the most advanced to those who are just seeing this material for the first time.
+
+
+## Week 1 - Task 0 - Understanding the Problem
+
+(Natural language processing and text mining.)
+
+The first step in analyzing any new data set is figuring out: (a) what data you have and (b) what are the standard tools and models used for that type of data. Make sure you have downloaded the data from Coursera before heading for the exercises. This exercise uses the files named LOCALE.blogs.txt where LOCALE is the each of the four locales en_US, de_DE, ru_RU and fi_FI. The data is from a corpus called HC Corpora (www.corpora.heliohost.org). See the readme file at http://www.corpora.heliohost.org/aboutcorpus.html for details on the corpora available. The files have been language filtered but may still contain some foreign text.
+
+In this capstone we will be applying data science in the area of natural language processing. As a first step toward working on this project, you should familiarize yourself with Natural Language Processing, Text Mining, and the associated tools in R. Here are some resources that may be helpful to you.
+
+[Natural language processing Wikipedia page](https://en.wikipedia.org/wiki/Natural_language_processing)
+
+[Text mining infrastucture in R](http://www.jstatsoft.org/v25/i05/)
+[CRAN Task View: Natural Language Processing](http://cran.r-project.org/web/views/NaturalLanguageProcessing.html)
+[Coursera course on NLP (not in R)](https://www.coursera.org/course/nlp)
+
+#### Dataset
+
+This is the training data to get you started that will be the basis for most of the capstone. You must download the data from the Coursera site and not from external websites to start.
+
+[Capstone Dataset](https://d396qusza40orc.cloudfront.net/dsscapstone/dataset/Coursera-SwiftKey.zip)
+
+Your original exploration of the data and modeling steps will be performed on this data set. Later in the capstone, if you find additional data sets that may be useful for building your model you may use them.
+
+#### Tasks to accomplish
+
+1. Obtaining the data - Can you download the data and load/manipulate it in R?
+
+2. Familiarizing yourself with NLP and text mining - Learn about the basics of natural language processing and how it relates to the data science process you have learned in the Data Science Specialization.
+
+#### Questions to consider
+
+1. What do the data look like?
+2. Where do the data come from?
+3. Can you think of any other data sources that might help you in this project?
+4. What are the common steps in natural language processing?
+5. What are some common issues in the analysis of text data?
+6. What is the relationship between NLP and the concepts you have learned in the Specialization?
+
+
+## Week 1 - Task 1 - Getting and Cleaning the Data
+
+Large databases comprising of text in a target language are commonly used when generating language models for various purposes. In this exercise, you will use the *English database* but may consider three other databases in German, Russian and Finnish.
+
+The goal of this task is to get familiar with the databases and do the necessary cleaning. After this exercise, you should understand what real data looks like and how much effort you need to put into cleaning the data. When you commence on developing a new language, the first thing is to understand the language and its peculiarities with respect to your target. You can learn to read, speak and write the language. Alternatively, you can study data and learn from existing information about the language through literature and the internet. At the very least, you need to understand how the language is written: writing script, existing input methods, some phonetic knowledge, etc.
+
+Note that the data contain words of offensive and profane meaning. They are left there intentionally to highlight the fact that the developer has to work on them.
+
+#### Tasks to accomplish
+
+1. Tokenization - identifying appropriate tokens such as words, punctuation, and numbers. Writing a function that takes a file as input and returns a tokenized version of it.
+2. Profanity filtering - removing profanity and other words you do not want to predict.
+
+#### Tips, tricks, and hints
+
+1. Loading the data in. 
+This dataset is fairly large. We emphasize that you don't necessarily need to load the entire dataset in to build your algorithms (see point 2 below). At least initially, you might want to use a smaller subset of the data. Reading in chunks or lines using R's readLines or scan functions can be useful. You can also loop over each line of text by embedding readLines within a for/while loop, but this may be slower than reading in large chunks at a time. Reading pieces of the file at a time will require the use of a file connection in R. For example, the following code could be used to read the first few lines of the English Twitter dataset:
+
+con <- file("en_US.twitter.txt", "r") 
+readLines(con, 1) ## Read the first line of text 
+readLines(con, 1) ## Read the next line of text 
+readLines(con, 5) ## Read in the next 5 lines of text 
+close(con) ## It's important to close the connection when you are done
+
+See the ?connections help page for more information.
+
+2. Sampling. To reiterate, to build models you don't need to load in and use all of the data. Often relatively few randomly selected rows or chunks need to be included to get an accurate approximation to results that would be obtained using all the data. Remember your inference class and how a representative sample can be used to infer facts about a population. You might want to create a separate sub-sample dataset by reading in a random subset of the original data and writing it out to a separate file. That way, you can store the sample and not have to recreate it every time. You can use the rbinom function to "flip a biased coin" to determine whether you sample a line of text or not.
+
+### My Work - Loading the data
+
+Skip the stuff about downloading the file and checking for existance...
+- reading as csv file isn't a good idea, commas in the file split the phrases up turning this into a dataframe.  need to read it in as a vector of character strings.  The readLines command seems to work much better.
+- to read a whole file only takes about 10 sec.   
+- it appears that ' and " are modified as they are imported.   ' becomes â???T    " becomes â???o      don't know what other hidden coversions are lurking.  Changing the encoding from Latin-1 (default) to UTF-8 has fixed this.
+
+```{r}
+path <- "./Coursera-SwiftKey/final/en_US/"
+file <- c("en_US.blogs.txt", "en_US.news.txt", "en_US.twitter.txt")
+
+for (i in 1:length(file)){
+      assign(paste(file[i]), readLines(con=paste(path,file[i],sep=""), warn=FALSE, encoding='UTF-8' ))
+}
+rm(i)
+
+```
+
+Setup Test versions of files for testing code in development.
+
+```{r}
+path <- "./Coursera-SwiftKey/final/en_US/"
+file <- c("en_US.blogs.txt", "en_US.news.txt", "en_US.twitter.txt")
+
+for (i in 1:length(file)){
+      assign(paste(file[i],".test",sep=""), readLines(con=paste(path,file[i],sep=""), warn=FALSE, n=50, encoding='UTF-8' ))
+}
+rm(i)
+
+```
+
+
+### 
+
+
+
+
+
+
+##  Week 1 - Quiz
+
+1. The en_US.blogs.txt  file is how many megabytes?
+
+100
+
+150
+
+** 200 **
+
+x 250 x the size when loaded into R studio is 248.5MB, however the size on disk is 205,235 kB,  
+
+
+2. The en_US.twitter.txt has how many lines of text?
+
+Around 1 million
+
+Around 5 hundred thousand
+
+Around 2 hundred thousand
+
+** Over 2 million ** when loaded the vector is 2,360,148 elements
+
+
+3. What is the length of the longest line seen in any of the three en_US data sets?
+
+```{r}
+dat <- c("blogs", "news", "twitter")
+
+for (d in dat){
+      assign(paste(d, ".ln", sep=""), nchar(get(paste("en_US", d, "txt", sep="."))))
+      cat("The longest line in ", d, " is ", max(get(paste(d, ".ln", sep=""))), ". \n", sep="")
+}
+```
+
+
+Over 40 thousand in the news data set
+
+** Over 40 thousand in the blogs data set **
+
+Over 11 thousand in the blogs data set
+
+Over 11 thousand in the news data set
+
+
+Q-4. In the en_US twitter data set, if you divide the number of lines where the word "love" (all lowercase) occurs by the number of lines the word "hate" (all lowercase) occurs, about what do you get?
+
+```{r}
+#sum(grepl("love", en_US.twitter.txt))/sum(grepl("hate", en_US.twitter.txt))
+```
+
+takes about 15s to return 4.108
+
+
+0.5
+
+0.25
+
+** 4 **
+
+2
+
+Q-5. The one tweet in the en_US twitter data set that matches the word "biostats" says what?
+
+```{r}
+li <- "biostats"
+which(grepl(li, en_US.twitter.txt))
+```
+
+reports that it is tweet 556872
+```{r}
+en_US.twitter.txt[556872]
+```
+
+
+It's a tweet about Jeff Leek from one of his students in class
+
+** They haven't studied for their biostats exam **
+
+They just enrolled in a biostat program
+
+They need biostats help on their project
+
+
+6. How many tweets have the exact characters "A computer once beat me at chess, but it was no match for me at kickboxing". (I.e. the line matches those characters exactly.)
+
+```{r}
+#li <- "A computer once beat me at chess, but it was no match for me at kickboxing"
+#sum(grepl(li, en_US.twitter.txt))
+```
+
+
+
+** 3 **  took about 15s to return 3
+
+2
+
+0
+
+1
+
+##  End of Week 1 ## 
