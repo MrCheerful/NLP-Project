@@ -3,6 +3,11 @@
 # date: "May 7, 2017"
 #---
 
+# version -2  2017-05-27 Need to redo cleaning including 1 and 2 character words.
+# the resulting TDM's will be only used to generate the top 1000 (or other quantity)
+# words for the prediction matrix.
+
+
 #library(ggplot2); 
 library(parallel); 
 #library(dplyr); 
@@ -18,7 +23,7 @@ library(slam)
 
 preclean <- function(in.file, out.file=NULL,
                      in.path="./data-3-split/",
-                     out.path="./data-4-cleaned-1/",
+                     out.path="./data-4-cleaned-2/",
                      routine=1){
 
       # set the name for the object
@@ -60,10 +65,10 @@ preclean <- function(in.file, out.file=NULL,
 
       ## TDM
       if (routine==1) {
-            s4 <- system.time(corp <- TermDocumentMatrix(corp))
+            s4 <- system.time(corp <- TermDocumentMatrix(corp, control = list(wordLengths=c(1,Inf))))
       } else if (routine==2) {
             gram2 <- function(x) NGramTokenizer(x, Weka_control(min = 2, max = 2))
-            s4 <- system.time(corp <- TermDocumentMatrix(corp, control = list(tokenize = gram2)))
+            s4 <- system.time(corp <- TermDocumentMatrix(corp, control = list(wordLengths=c(1,Inf),tokenize = gram2)))
       }
 
       # Stop parallelization
@@ -95,3 +100,12 @@ preclean <- function(in.file, out.file=NULL,
 
 }
 
+# cleanings required of version 2 level
+#preclean('blog-train.txt')
+#preclean('news-train.txt')
+#preclean('twit-train.txt')
+
+# test to make sure it all works
+preclean('news-train01.txt')
+
+# save the list of top words into 'good_words.Rdata'

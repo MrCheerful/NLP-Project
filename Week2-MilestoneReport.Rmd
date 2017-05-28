@@ -1,5 +1,5 @@
 ---
-title: "Milestone Report"
+title: "Predictive Text App - Milestone Report"
 author: "MrCheerful"
 date: "May 3, 2017"
 output: html_document
@@ -7,45 +7,30 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-library(ggplot2); library(parallel); library(dplyr); library(RWeka); library(magrittr); library(tm); library(stringi)
+library(ggplot2); library(parallel); library(dplyr); library(RWeka); library(magrittr); library(tm); library(stringi); library(slam)
 ```
 
-## John Hopkins Data Science Certificate Capstone Project
-## Predictive Text Application
-## Milestone Report - Exploratory Data Analysis
+#### John Hopkins Data Science Certificate Capstone Project
+
 
 ### Report Objectives
 
-#### Instructions
+This report summarizes progress on the predictive text algorithm development. The focus for the first two weeks of activity has been establishing the development environment, reviewing the available data, and becoming familiar with the computational routines available for working with the textual datasets.
 
-The goal of this project is just to display that you've gotten used to working with the data and that you are on track to create your prediction algorithm. Please submit a report on R Pubs (http://rpubs.com/) that explains your exploratory analysis and your goals for the eventual app and algorithm. This document should be concise and explain only the major features of the data you have identified and briefly summarize your plans for creating the prediction algorithm and Shiny app in a way that would be understandable to a non-data scientist manager. You should make use of tables and plots to illustrate important summaries of the data set. The motivation for this project is to: 
 
-1. Demonstrate that you've downloaded the data and have successfully loaded it in.
-2. Create a basic report of summary statistics about the data sets.
-3. Report any interesting findings that you amassed so far.
-4. Get feedback on your plans for creating a prediction algorithm and Shiny app.
+### Data Retrieval and Cleaning Operations
 
-#### Review criteria
-
-1. Does the link lead to an HTML page describing the exploratory analysis of the training data set?
-2. Has the data scientist done basic summaries of the three files? Word counts, line counts and basic data tables?
-3. Has the data scientist made basic plots, such as histograms to illustrate features of the data?
-4. Was the report written in a brief, concise style, in a way that a non-data scientist manager could appreciate?
-
-## Data Retrieval and Cleaning Operations
-
-For the developement of the predictive text algorithm the JHU web scraping team has provided several data collections in four languages and from three sources with varying levels of formality.  For this project, development will be limited in scope to using the English datasets.   As a language changes over time the algorithms to be developed such that they will readily accomodate updated datasets, and may also be used with different languages.
+For the developement of the predictive text algorithm the JHU web scraping team has provided several data collections in four languages and from three sources with varying levels of formality.  For this project, development will be limited in scope to using the English datasets.   
 
 The raw data may be retrieved from the Coursera site:  [Capstone Dataset](https://d396qusza40orc.cloudfront.net/dsscapstone/dataset/Coursera-SwiftKey.zip)
 
 #### Loading Dataset
 
-For brevity, the code chunk for downloading and extracting the data is not shown.  From the extracted data sets, the relevant datasets are readily retrieved using the tm library commands in the next code chunk.
+For brevity, the code chunk for downloading and extracting the data is not shown.  From the extracted data sets, the relevant datasets are readily retrieved using functionality from the tm library.
  
 ```{r}
 # Set up dataset retrieval options
-#dd <- "./Coursera-SwiftKey/final/en_US"
-dd <- "./Coursera-SwiftKey/final/test"
+dd <- "./Coursera-SwiftKey/final/en_US"
 dd.texts <- DirSource(directory=dd, encoding='UTF-8', mode="text" )
 
 # Read data files into a volatile (in memory) corpus
@@ -55,9 +40,9 @@ corp <- VCorpus(dd.texts)
 
 #### Initial Dataset information
 
-A function has been set up to give an overview of metrics describing the corpus.
+The raw data is summarized with the following metrics.
 
-```{r}
+```{r echo=FALSE}
 library(stringi)
 cor.info <- function(c) {
       # set up initial empty vectors  
@@ -79,27 +64,31 @@ cor.info <- function(c) {
 cor.info(corp)
 ```
 
-#### Examining Data Points
+
+#### Text Example
+
+The following example is a small extract from one of the datasets prior to cleaning activities.
 
 ```{r}
 # set up function for viewing data.  Acknowledgement to Graham@togaware for function
 cor.view <- function(d,n){ d %>% extract2(n) %>% as.character() } # %>% writeLines() }
-print
 cor.view(corp,1)[5]
 ```
 
 
-
-#### Bad Words Dataset
+### Bad Words Dataset
 
 As the intended audience of the application is the general public, the predictive algorithm shall not suggest socially inappropriate terms.  As the end users may span the full range of cultural sensitivities, it is best to err on the safe side and exclude any potentially offensive terms.  There are no restricitions on an individual user's expressiveness; if a user wishes to use an obscene or offensive word, they are able to type it in as usual.    
 
 From a quick internet search, Luis von Ahn has a fairly comprehensive list of potentially offensive words at: [List of bad words](https://www.cs.cmu.edu/~biglou/resources/bad-words.txt)
 This will be used as the starting point and may be readily expanded as further experience is gained.
+```{r, echo=FALSE}
+corp <- VCorpus(VectorSource("Hello, my name is long name for text analysis"))
+```
 
-The tm library command for filtering the profanity has been tested and is included in the code chunk.  However the command is commented out for the exploratory analysis.
+The tm library command for filtering the profanity has been tested and is included in the code chunk.  
 
-```{r}
+```{r }
 if(!file.exists("bad-words.txt")){
       download.file("https://www.cs.cmu.edu/~biglou/resources/bad-words.txt", "bad-words.txt")
 }
@@ -108,173 +97,121 @@ BadWords <- readLines(con="bad-words.txt", warn=FALSE, encoding='UTF-8' )
 BadWords <- BadWords[BadWords!=""]
 
 # remove bad words
-#corp <- tm_map(corp, removeWords, BadWords)
-```
-
-#### Possible manipulations
-
-The exploratory data analysis included experimenting with the possible manipulations of the data using available routines within the tm and weka libraries.  
-
-```{r}
-getTransformations()
-```
-
-```{r}
-system.time({
-# remove non-english characters.  This doesn't want to work using parLapply.
-# (code credit to Yanchang Zhao, "R Data Mining, 2012")
-clean <- function(x) gsub("[^[:alpha:][:space:]]*", "", x)
-corp <- tm_map(corp, content_transformer(clean))
-})
-```
-
-```{r}
-# set up parallelization
-cores <- detectCores() 
-cl <- makeCluster(cores)
-#clusterExport(clus, "base")
-tm_parLapply_engine(cl)
+corp <- tm_map(corp, removeWords, BadWords)
 ```
 
 
-```{r}
-system.time({
-      corp <- tm_map(corp, removeNumbers)
-      corp <- tm_map(corp, removePunctuation)
-      corp <- tm_map(corp, content_transformer(tolower))
-      corp <- tm_map(corp, stripWhitespace)
-})
+### Data Splitting
+
+The dataset has been seperated as follows:
+
+* Training data - 70%
+* Test set 1 - 15%
+* Test set 2 - 15%
+
+In addition, small sample sets from the training data have been taken for use during code development.
+
+
+### Possible manipulations
+
+The exploratory analysis included experimenting with the possible manipulations of the data using available routines within the tm and weka libraries.  Available manipulations include:
+
+* Remove whitespace
+* Convert to lower case
+* Remove non-english characters
+* Remove stopwords or bad-words
+* Remove numbers and punctuation
+* Find and replace particular strings or characters
+
+
+### Descriptive Statistics on Datasets
+
+A variety of visuals are presented to illustrate aspects of the data set.  The data is first tabulated as unigrams into a term document matrix, from which the visuals are derived.
+
+```{r, echo=FALSE}
+load("./data-4-cleaned-1/tdm1-train25.Rdata")
+
 
 ```
 
-without parallel:
-user  system elapsed 
-   3.45    0.00    3.59 
-   
-with parallel:  
- user  system elapsed 
-   0.59    0.31    4.79 
-
-
-### Descriptive Statistics on Datasets  **** make this parallel operation
-
-For the preparation of descriptive statistics the data is first tabulated as unigrams into a document term matrix.
+#### Histogram of Common Words
 
 ```{r}
-# set up parallelization
-library(parallel)
-cores <- detectCores() /2
-cl <- makeCluster(cores)
-clusterExport(cl, "base")
-tm_parLapply_engine(cl)
-```
-
-```{r}
-
-t1 <- proc.time()
-tdm.corp <- TermDocumentMatrix(corp)
-t2 <- proc.time()
-t2-t1
-```
-
-```{r}
-system.time(tdm.df <- data.frame(as.matrix(tdm.corp)))
-
-tm_parLapply_engine(NULL)
-stopCluster(cl)
-
-```
-
-
-#### most common words bar graph
-```{r}
-# sum up columns
-tdm.df$sum <- rowSums(tdm.df)
-
-# sort by sum column
-tdm.dfo <- tdm.df[order(-tdm.df$sum),]
-
-
-word.freq <- data.frame(word=row.names(tdm.dfo), freq=tdm.dfo$sum)
-word.freq$word <- factor(word.freq$word, 
-                     levels=with(word.freq, word[order(freq, word, decreasing = TRUE)]))
-
-# make cummulative plot highlighting the terms to give 50% and 90% of words.
-g1 <- ggplot(word.freq[1:15,], aes(x=word, y=freq)) +
+# convert TDM to dataframe
+corp.df <- as.data.frame(as.matrix(news.tdm1))
+# sum rows
+corp.df <- data.frame(word=rownames(corp.df), sum=rowSums(corp.df))
+# sort by frequency
+corp.df <- corp.df[order(-corp.df$sum),]
+# fix factors so it plots in decreasing order
+corp.df$word <- factor(corp.df$word, 
+                     levels=with(corp.df, word[order(sum, word, decreasing = TRUE)]))
+# prepare histogram of most common words
+g1 <- ggplot(corp.df[1:15,], aes(x=word, y=sum)) +
       geom_bar(stat="identity")
 g1
 ```
 
-#### most common words by wordcloud
 
-```{r}
+#### WordCloud of Common Words
+
+```{r, echo=FALSE}
 library(wordcloud)
-set.seed(1)
-wordcloud(word.freq$word, word.freq$freq, max.words=300, colors=brewer.pal(10, "Paired") )
+set.seed(4)
+wordcloud(corp.df$word, corp.df$sum, max.words=200, colors=brewer.pal(10, "Paired") )
 ```
 
 
-
-#### make cummulative plot highlighting the portion of the corpus to give 50% and 90% of words in text.
+#### Cummulative Frequency Plot -  of the corpus to give 50% and 90% of words in text.
 
 ```{r}
 # add index and cummulative sum to tdm
-tdm.dfo$x <- seq(along.with=tdm.dfo$sum)
-tdm.dfo$cs <- cumsum(tdm.dfo$sum)
-temp <- sum(tdm.dfo$sum)
-tdm.dfo$cf <- tdm.dfo$cs/temp
-cf.v50 <- length(tdm.dfo$cf[tdm.dfo$cf<=0.5])/length(tdm.dfo$cf)
-cf.v90 <- length(tdm.dfo$cf[tdm.dfo$cf<=0.9])/length(tdm.dfo$cf)
+corp.df$x <- seq(along.with=corp.df$sum)
+corp.df$cs <- cumsum(corp.df$sum)
+temp <- sum(corp.df$sum)
+corp.df$cf <- corp.df$cs/temp
+cf.v50 <- length(corp.df$cf[corp.df$cf<=0.5])/length(corp.df$cf)
+cf.v90 <- length(corp.df$cf[corp.df$cf<=0.9])/length(corp.df$cf)
 rm(temp)
 
-g2 <- ggplot(tdm.dfo, aes(x=(x/length(tdm.dfo$sum)), y=cf)) +
+g2 <- ggplot(corp.df, aes(x=(x/length(corp.df$sum)), y=cf)) +
       geom_line() +
       geom_vline(xintercept=cf.v50, color="blue", linetype="dashed") +
       geom_vline(xintercept=cf.v90, color="red", linetype="dashed") +
-      labs(title="Word Usage Frequency", x="Portion of Corpus", y="Cummulative Terms Used in Text")
+      labs(title="Word Usage Frequency", x="Terms in Corpus, %", y="Cummulative Terms in Text, %")
 g2
 
 ```
 
-#### plot of word lengths
+#### Histogram of Word Length
 
 ```{r}
-word.freq$nlet <- nchar(as.character(word.freq$word))
-g4 <- ggplot(word.freq, aes(x=nlet)) +
+corp.df$nlet <- nchar(as.character(corp.df$word))
+g4 <- ggplot(corp.df, aes(x=nlet)) +
       geom_histogram(binwidth = 1) +
-      geom_vline(xintercept=mean(word.freq$nlet), color="red", linetype="dashed") +
-      labs(x="Number of Letters", y="Number of Words")
+      geom_vline(xintercept=mean(corp.df$nlet), color="red", linetype="dashed") +
+      labs(x="Number of Letters in Word", y="Number of Words")
 g4
 ```
 
 
-```{r}
-print("done")
-```
-
-
-#### heat map of words in first to fourth position in four-grams
 
 ### Findings
 
-#### percentage of words used in 90% of text - may be of value to focus on subset of words to increase performance.
+From the exploratory review the following comments are noted for consideration in the predictive algorithm.
 
-#### are word frequencies position sensitive?
+* In the Word Usage Frequency plot we find that 50% of the words used come less than 5% of the corpus, and 90% of the words used come from about 40% of the corpus.   This indicates that removal of the least common words will potentially have a minimal effect on prediction accuracy.
+
+* The text processing times can be very long; removal of the infrequently used words improves processing speed.
 
 
 ### Next Steps
 
-1. Split dataset into training (70%) and two test sets (2 x 15%), and extract from the training set development sets of 10 and 1000 lines.
-2. Develop routines for processing the dataset and preparation of the text prediction tables.
-3. Develop the testing and evaluation methods.
-4. Develop the data predicition algorithm.
-5. Test and iterate on algorithms to improve prediction capabilities.
+1. Develop the testing and evaluation methods.
+2. Develop routines for preparation of the text prediction tables.
+3. Develop the data predicition algorithm.
+4. Test and iterate on algorithms to improve prediction capabilities.
 5. Develop shiny app.
 6. Final Report
 7. Bask in the glory of having finished the program, then find a job.
-
-
-
-
-
 
