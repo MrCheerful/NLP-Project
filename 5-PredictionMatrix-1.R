@@ -44,7 +44,7 @@ chunk_into_sentences <- function(text) {
 
 # Routine for inserting a indexed text vector into prediction data frame
 
-addToPredictionMatrix <- function(indexV) {
+addToPredictionMatrix <- function(indexV, p.df) {
       
       # break sentance vector into temporary data frame of 4 grams
       t.df <- data.frame(w2 = integer(), w1 = integer(), w0 = integer(), wp = integer(), freq = integer())
@@ -66,6 +66,7 @@ addToPredictionMatrix <- function(indexV) {
                   p.df[rn,'freq'] <- p.df[rn,'freq'] + 1
             }
       }
+      p.df
 }
 
 #---------------------------
@@ -99,9 +100,9 @@ subs.df <- read.csv(text="index,sWord,pWord,grep
 
 load('good_words.Rdata')
 a<-length(subs.df$pWord)
-temp.df <- data.frame(index = seq(a+1, length.out=length(good_words$word)),
-                      sWord = good_words$word,
-                      pWord = good_words$word)#,
+temp.df <- data.frame(index = seq(a+1, length.out=length(dictionaryWordsVector)),
+                      sWord = dictionaryWordsVector,
+                      pWord = dictionaryWordsVector)#,
 #                      grep = NA)
 
 ddf <- rbind(subs.df[,1:3],temp.df)
@@ -127,14 +128,7 @@ if (!exists('p.df')) {
       }
 }
 
-#----------------------------------------------------------------------
 
-## Load the training dataset
-con <- file('./data-3-split/news-train01.txt')
-#text <- readLines(con, warn=FALSE, encoding='UTF-8' )
-textV <- readLines(con, warn=FALSE, encoding='latin-1' )
-close(con)
-rm(con)
 
 #---------------------------------------
 
@@ -164,7 +158,7 @@ textToIndexedVector <- function(textString){
       wordV <- stri_split_fixed(textString, " ")
 
 # debugging
-      print(wordV)
+#      print(wordV)
 
       ## match and index abbreviations   NOTE CHANGE ddf$pWord to ddf$sWord WHEN GREP ROUTINES DONE
       indexV <- match(wordV[[1]], ddf$pWord, nomatch = '1')
@@ -173,6 +167,46 @@ textToIndexedVector <- function(textString){
       c(0,0,0,indexV)
 }
 
+#----------------------------------------
+
 indexedVectorToText <- function(iv){
       ddf[iv,'pWord']
 }
+
+#----------------------------------------
+
+basicPrediction <- function(wordV){
+      
+      indexV <- match(wordV, ddf$pWord, nomatch = '1')
+      
+      #search for matching rows
+      rn <- which(p.df$w2==indexV[1] & p.df$w1==indexV[2] & p.df$w0==indexV[3])
+      
+      indexedVectorToText(p.df[rn,'wp'])
+      
+}
+
+#----------------------------------------------------------------------
+
+FileList <- data.frame(name=as.character(dir('data-3-split')), stringsAsFactors=FALSE)
+FileListV <- c(FileList[4:8,1], FileList[12:16,1], FileList[20:24,1])
+
+# Loop around training set files
+
+for ( a in seq_along(FileListV)) {
+      
+      ## Load the training dataset
+      con <- file(paste0('./data-3-split/',FileListV[a]))
+      #text <- readLines(con, warn=FALSE, encoding='UTF-8' )
+      textV <- readLines(con, warn=FALSE, encoding='latin-1' )
+      close(con)
+      rm(con)
+
+      ## Parse the training set
+      for (i in seq_along(textV)){
+            p.df <- addToPredictionMatrix(textToIndexedVector(textV[i]), p.df)
+      }
+      save(p.df, file="predictmatrix.Rdata")
+      cat("Completed: ",FileListV[a],".  ")
+}
+

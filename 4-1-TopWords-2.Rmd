@@ -1,0 +1,142 @@
+---
+title: "Untitled"
+author: "MrCheerful"
+date: "May 27, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2);
+```
+
+#### Load the cleaned TDMs
+
+```{r}
+load("./data-4-cleaned-2/news-train01-m1.Rdata")
+load("./data-4-cleaned-2/twit-train01-m1.Rdata")
+load("./data-4-cleaned-2/blog-train01-m1.Rdata")
+```
+
+#### Inspect production log
+
+```{r}
+load("./data-4-cleaned-2/log.Rdata")
+time.log
+```
+
+#### Examine top words
+
+```{r}
+g1 <- ggplot(blogtrain01m1[1:25,], aes(x=word, y=sum)) +
+      geom_bar(stat="identity") + labs(title="BLOG") ; g1
+g2 <- ggplot(twittrain01m1[1:25,], aes(x=word, y=sum)) +
+      geom_bar(stat="identity") + labs(title="Twit")  ; g2
+g3 <- ggplot(newstrain01m1[1:25,], aes(x=word, y=sum)) +
+      geom_bar(stat="identity") + labs(title="News")  ; g3
+
+```
+
+#### Cummulative Frequency Plot -  of the corpus to give 50% and 90% of words in text.
+
+```{r}
+# add index and cummulative sum to tdm
+AddCummCols <- function(corp.df){
+      corp.df$x <- seq(along.with=corp.df$sum)
+      corp.df$cs <- cumsum(corp.df$sum)
+      temp <- sum(corp.df$sum)
+      corp.df$cf <- corp.df$cs/temp
+      corp.df
+}
+```
+
+```{r}
+twit.df <- AddCummCols(twittrain01m1)
+blog.df <- AddCummCols(blogtrain01m1)
+news.df <- AddCummCols(newstrain01m1)
+```
+
+```{r}
+
+bf.v50 <- length(blog.df$cf[blog.df$cf<=0.5])/length(blog.df$cf)
+bf.v90 <- length(blog.df$cf[blog.df$cf<=0.9])/length(blog.df$cf)
+rm(temp)
+
+g21 <- ggplot(blog.df, aes(x=(x/length(blog.df$sum)), y=cf)) +
+      geom_line() +
+      geom_vline(xintercept=bf.v50, color="blue", linetype="dashed") +
+      geom_vline(xintercept=bf.v90, color="red", linetype="dashed") +
+      labs(title="Blog Word Usage Frequency", x="Terms in Corpus, %", y="Cummulative Terms in Text, %")
+g21
+
+```
+
+```{r}
+
+tf.v50 <- length(twit.df$cf[twit.df$cf<=0.5])/length(twit.df$cf)
+tf.v90 <- length(twit.df$cf[twit.df$cf<=0.9])/length(twit.df$cf)
+rm(temp)
+
+g21 <- ggplot(twit.df, aes(x=(x/length(twit.df$sum)), y=cf)) +
+      geom_line() +
+      geom_vline(xintercept=tf.v50, color="blue", linetype="dashed") +
+      geom_vline(xintercept=tf.v90, color="red", linetype="dashed") +
+      labs(title="twit Word Usage Frequency", x="Terms in Corpus, %", y="Cummulative Terms in Text, %")
+g21
+
+```
+
+```{r}
+
+nf.v50 <- length(news.df$cf[news.df$cf<=0.5])/length(news.df$cf)
+nf.v90 <- length(news.df$cf[news.df$cf<=0.9])/length(news.df$cf)
+rm(temp)
+
+g21 <- ggplot(news.df, aes(x=(x/length(news.df$sum)), y=cf)) +
+      geom_line() +
+      geom_vline(xintercept=nf.v50, color="blue", linetype="dashed") +
+      geom_vline(xintercept=nf.v90, color="red", linetype="dashed") +
+      labs(title="news Word Usage Frequency", x="Terms in Corpus, %", y="Cummulative Terms in Text, %")
+g21
+
+```
+
+```{r}
+data.frame(source=c('blog','twit','news'), 
+           Cum50 = c(length(blog.df$cf[blog.df$cf<0.5]), 
+                     length(twit.df$cf[twit.df$cf<0.5]),
+                     length(news.df$cf[news.df$cf<0.5]) ),
+           Cum90 = c(length(blog.df$cf[blog.df$cf<0.9]), 
+                     length(twit.df$cf[twit.df$cf<0.9]),
+                     length(news.df$cf[news.df$cf<0.9]) ) )
+```
+
+```{r}
+blogW <- as.character(blog.df$word[1:2000])
+twitW <- as.character(twit.df$word[1:2000])
+newsW <- as.character(news.df$word[1:2000])
+
+#combined <- intersect(blogW,twitW) - resulted in 1396 long vector
+combined <- union(blogW,twitW)  # len - 2604
+combined <- union(combined, newsW)  #3393
+```
+
+
+```{r}
+dictionaryWordsVector <- combined
+save(dictionaryWordsVector, file='good_words.Rdata')
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+

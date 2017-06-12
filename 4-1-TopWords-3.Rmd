@@ -1,0 +1,150 @@
+---
+title: "Untitled"
+author: "MrCheerful"
+date: "June 03, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2);
+library(dplyr)
+source('~/R Zone/2017-04 John Hopkins Data Science Program Notes/10_Capstone Project/A-Functions.R')
+```
+
+## Objective
+
+This script generates a data frame of all the words used in the texts examined, and their frequencies.  This is then used to generate a list of words to use in the word to code dictionary.
+
+Output saved as vector *dictionaryWordsVector* in file good_words.Rdata
+
+#### Preprocessing
+
+Load text files and process through initial parsing text2word step to generate list of vectors for each text line.
+
+```{r}
+FileList <- as.character(dir('data-3-split'))
+FileListV <- FileList[c(12,4,20)]
+
+bigwordvector <- character()
+
+for ( a in seq_along(FileListV)) {
+      
+      ## Load the training dataset
+      con <- file(paste0('./data-3-split/',FileListV[a]))
+      #text <- readLines(con, warn=FALSE, encoding='UTF-8' )
+      text <- readLines(con, warn=FALSE, encoding='latin-1' )
+      close(con)
+      rm(con)
+
+      ## Parse the training set
+      for (i in seq_along(text)){
+            bigwordvector <- c(bigwordvector, text2word(text[i]))
+      }
+}
+
+```
+
+#### Inspect the bigwordvector to ensure appropriate parsing and cleanliness
+
+```{r}
+head(bigwordvector,5)
+tail(bigwordvector,5)
+```
+
+#### Determine the frequencies of each word.  And sort by frequency.
+
+```{r}
+bigworddf <- data.frame(word=unlist(bigwordvector), freq=1L, stringsAsFactors = FALSE) %>%
+      group_by(word) %>%
+      summarize(freq=sum(freq))
+sum(bigworddf$freq)
+
+bigworddf <- arrange(bigworddf, desc(freq))
+
+
+```
+
+
+
+#### Examine top words
+
+```{r}
+# fix factors so it plots in decreasing order
+corp.df <- bigworddf
+corp.df$word <- factor(corp.df$word, 
+                     levels=with(corp.df, word[order(freq, word, decreasing = TRUE)]))
+
+# prepare histogram of most common words
+g1 <- ggplot(corp.df[1:15,], aes(x=word, y=freq)) +
+      geom_bar(stat="identity")
+g1
+
+```
+
+#### Cummulative Frequency Plot -  of the corpus to give 50% and 90% of words in text.
+
+```{r}
+# add index and cummulative sum to tdm
+
+corp.df$x <- seq(along.with=corp.df$freq)
+corp.df$cs <- cumsum(corp.df$freq)
+temp <- sum(corp.df$freq)
+corp.df$cf <- corp.df$cs/temp
+corp.df
+rm(temp)
+```
+
+```{r}
+
+cf.v50 <- length(corp.df$cf[corp.df$cf<=0.5])/length(corp.df$cf)
+cf.v90 <- length(corp.df$cf[corp.df$cf<=0.9])/length(corp.df$cf)
+
+
+g21 <- ggplot(corp.df, aes(x=(x/length(corp.df$freq)), y=cf)) +
+      geom_line() +
+      geom_vline(xintercept=cf.v50, color="blue", linetype="dashed") +
+      geom_vline(xintercept=cf.v90, color="red", linetype="dashed") +
+      labs(title="Word Usage Frequency", x="Terms in Corpus, %", y="Cummulative Terms in Text, %")
+g21
+
+```
+
+
+```{r}
+data.frame(source=c('BigVector'), 
+           Cum50 = c(length(corp.df$cf[corp.df$cf<0.5])),
+           Cum90 = c(length(corp.df$cf[corp.df$cf<0.9])) )
+```
+
+##  Insert here
+
+1. intersect with alias list to see which aliases are actually used
+
+2. intersect with bad words list to see which bad word are used, and remove the bad words
+
+3. 
+
+
+
+####  Don't forget to save the desired vector of words.
+
+```{r}
+dictionaryWordsVector <- bigworddf$word[1:1000]
+save(dictionaryWordsVector, file='good_words.Rdata')
+dictionaryWordsVector
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+

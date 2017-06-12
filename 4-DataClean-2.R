@@ -17,6 +17,13 @@ library(tm);
 #library(stringi)
 library(slam)
 
+
+
+## Cleaning routine for corpus
+# remove non-english characters.  This doesn't want to work using parLapply.
+# (code credit to Yanchang Zhao, "R Data Mining, 2012")
+clean <- function(x) gsub("[^[:alpha:][:space:]]*", "", x)
+
 # 2017-05-12 Cleaning process is set up as a function
 
 # input is to be the text file from the split dataset
@@ -26,11 +33,14 @@ preclean <- function(in.file, out.file=NULL,
                      out.path="./data-4-cleaned-2/",
                      routine=1){
 
-      # set the name for the object
+      # set the name for the object's output file
       varname <- paste(strsplit(in.file,"[.]")[[1]][1],"-m",routine,sep="")
       if (is.null(out.file)){
             out.file <- paste(varname, ".Rdata", sep="")
       }
+      
+      # set name for name of R object
+      tdmname <- gsub("-", "", varname)
 
       ## Load the file to be processed
       raw <- readLines(con=paste(in.path,in.file,sep=""), 
@@ -44,15 +54,11 @@ preclean <- function(in.file, out.file=NULL,
       s1 <- system.time(corp <- VCorpus(VectorSource(raw)))
       rm(raw)
 
-      ## Cleaning routine for corpus
-      # remove non-english characters.  This doesn't want to work using parLapply.
-      # (code credit to Yanchang Zhao, "R Data Mining, 2012")
-      clean <- function(x) gsub("[^[:alpha:][:space:]]*", "", x)
-
       # export clean function to parallel cluster
       clusterExport(cl, "clean")
 
       s2 <- system.time(corp <- tm_map(corp, content_transformer(clean)))
+      print("Hello, Corpus is done")
 
       # other cleaning operations
       s3 <- system.time({
@@ -61,7 +67,7 @@ preclean <- function(in.file, out.file=NULL,
             corp <- tm_map(corp, content_transformer(tolower))
             corp <- tm_map(corp, stripWhitespace)
       })
-
+      print("The cleaning steps are done")
 
       ## TDM
       if (routine==1) {
@@ -75,14 +81,28 @@ preclean <- function(in.file, out.file=NULL,
       tm_parLapply_engine(NULL)
       stopCluster(cl)
 
-      # retrieve log file
+      print("The TDM is done")      
+
+      s5 <- system.time({
+            # convert TDM to dataframe
+            corp.df <- as.data.frame(as.matrix(corp))
+            # sum rows
+            corp.df <- data.frame(word=rownames(corp.df), sum=rowSums(corp.df))
+            # sort by frequency
+            corp.df <- corp.df[order(-corp.df$sum),]
+            # fix factors so it plots in decreasing order
+            corp.df$word <- factor(corp.df$word, 
+                                  levels=with(corp.df, word[order(sum, word, decreasing = TRUE)]))
+      })
+      
+            # retrieve log file
       logfile <- paste(out.path, "log.Rdata", sep="")
       if (file.exists(logfile)){
             load(logfile)
       } 
       # format new row for log file
       nlog <- data.frame (in.file=in.file, out.file=out.file, 
-                          routine=routine, s1=s1[3], s2=s2[3], s3=s3[3], s4=s4[3])
+                          routine=routine, s1=s1[3], s2=s2[3], s3=s3[3], s4=s4[3], s5=s5[3])
       row.names(nlog) <- date()
       # append or store log
       if (exists("time.log")){ 
@@ -90,22 +110,22 @@ preclean <- function(in.file, out.file=NULL,
       } else  time.log <- nlog 
       save(time.log, file=logfile)
       
-      assign(paste(varname), corp)
-      rm(corp)
+      assign(paste(tdmname), corp.df)
+      rm(corp, corp.df)
       
-      # save tdm out to Rdata file.
-      save(list=varname, file=paste(out.path,out.file,sep=""))
+      # save dataframe out to Rdata file.
+      save(list=tdmname, file=paste(out.path,out.file,sep=""))
       
-      rm(list=varname)
+      rm(list=tdmname)
 
 }
 
 # cleanings required of version 2 level
-#preclean('blog-train.txt')
-#preclean('news-train.txt')
-#preclean('twit-train.txt')
+#preclean('blog-train01.txt')
+preclean('news-train01.txt')
+preclean('twit-train01.txt')
 
 # test to make sure it all works
-preclean('news-train01.txt')
+# preclean('blog-train01.txt')
 
 # save the list of top words into 'good_words.Rdata'

@@ -1,0 +1,25 @@
+---
+title: "Untitled"
+author: "MrCheerful"
+date: "May 27, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+load("./data-4-cleaned-2/news-train01-m1.Rdata")
+```
+
+```{r}
+inspect(`news-train01-m1`)
+
+```
+
+```{r}
+load("./data-4-cleaned-2/log.Rdata")
+time.log
+```
+

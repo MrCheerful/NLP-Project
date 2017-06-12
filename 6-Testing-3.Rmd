@@ -1,0 +1,146 @@
+---
+title: "Testing"
+author: "MrCheerful"
+date: "June 11, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Testing
+
+
+#### Load the test set
+
+Load a text library to use for the testing.  For the test log also adjust the test.com variable
+
+```{r}
+
+# Adjust this comment variable as appropriate for the log
+test.com <- "Out of sample"
+
+# Select the training sets to be processed
+FileList <- as.character(dir('data-3-split'))
+FileList
+```
+
+```{r}
+
+FileTest <- FileList[c(17)]
+               
+# load the testing dataset
+
+con <- file(paste0('./data-3-split/',FileTest))
+#text <- readLines(con, warn=FALSE, encoding='UTF-8' )
+test.text <- readLines(con, warn=FALSE, encoding='latin-1' )
+close(con)
+rm(con)
+
+length(test.text)
+
+```
+
+#### Select samples from test library to process
+
+```{r}
+set.seed(5)
+no.samples <- 30
+testV <- sample(test.text, no.samples)
+```
+
+#### Convert from vector of test strings into p.df like matrix for the sample
+
+```{r}
+process.test <- function(textcorpus){
+      
+      wordvector <- character(0)
+      wordlist <- list()
+      codevector <- integer(0)
+      codelist <- list()
+      test.df <- data.frame(w2 = integer(), w1 = integer(), 
+                         w0 = integer(), wp = integer(), freq = integer())
+      
+      ## Step 1. Parse the training set into word vectors
+      cat("1")
+      s1 <- system.time({
+            for (i in seq_along(textcorpus)){
+                  wordlist <- c(wordlist, text2word(textcorpus[i]))
+            }  
+      })
+      
+      ## Step 2. Convert word vectors to code vectors
+      cat("2")
+      s2 <- system.time({
+            for (i in seq_along(wordlist)){
+                  wordvector <- unlist(wordlist[i])
+                  codevector <- word2code(wordvector, word.dict)
+                  codelist <- c(codelist,list(codevector))
+            }  
+      })
+      
+      ## Step 3. Convert code vectors to 4gram dataframes
+      cat("3")
+      s3 <- system.time({
+            for (i in seq_along(codelist)){
+                  codevector <- unlist(codelist[i])
+                  test.df <- rbind(test.df, code2df(codevector))
+            } 
+      })
+
+      test.df
+}
+
+test.df <- process.test(testV)
+
+
+
+```
+
+#### using the test.df matrix, make a prediction for each row and compare
+
+
+```{r}
+v.s1 <- numeric()
+v.p1 <- logical()
+v.p5 <- logical()
+
+for (i in seq_along(test.df$w2)){
+
+      # get vector from which to predict next word
+      codev <- as.integer(test.df[i,1:3])
+      
+      if (codev[3]==0){codev[3]<-1L}
+
+      # get the prediction set
+      s1 <- system.time(pred.df <- calc.predict(codev, list.pdf))
+      
+      # check if actual matches top prediction
+      p1 <- (test.df[i,4]==unlist(pred.df[1,4]))
+      
+      # check if actual in top 5
+      p5 <- (test.df[i,4] %in% unlist(pred.df[1:5,4]))
+
+      v.s1 <- c(v.s1, s1[3])
+      v.p1 <- c(v.p1, p1)
+      v.p5 <- c(v.p5, p5)
+}
+load("testlog.Rdata")
+run.info.new <- data.frame(When <- Sys.time(), Type= test.com, File=FileTest, 
+           Accuracy1 = mean(v.p1), Accuracy5 = mean(v.p5), 
+           Speed = mean(v.s1), SampSize = length(v.p1))
+run.info <- rbind(run.info, run.info.new)
+save(run.info,file='testlog.Rdata')
+run.info
+
+```
+
+
+```{r}
+
+```
+
+
+
+
