@@ -24,7 +24,13 @@ Load text files and process through initial parsing text2word step to generate l
 
 ```{r}
 FileList <- as.character(dir('data-3-split'))
+FileList
+```
+```{r}
 FileListV <- FileList[c(12,4,20)]
+
+complex.df <- get.complex.df()
+
 
 bigwordvector <- character()
 
@@ -114,23 +120,48 @@ g21
 ```{r}
 data.frame(source=c('BigVector'), 
            Cum50 = c(length(corp.df$cf[corp.df$cf<0.5])),
+           Cum80 = c(length(corp.df$cf[corp.df$cf<0.85])),
            Cum90 = c(length(corp.df$cf[corp.df$cf<0.9])) )
 ```
 
-##  Insert here
+##  Alias Usage Check
 
-1. intersect with alias list to see which aliases are actually used
+intersect with alias list to see which aliases are actually used
 
-2. intersect with bad words list to see which bad word are used, and remove the bad words
+```{r}
+#alias.df <- bigworddf[grepl('qqzz',bigworddf$word),]
+alias.df <- bigworddf[bigworddf$word %in% complex.df$alias,]
+```
 
-3. 
+
+## Bad Words
+
+intersect with bad words list to see which bad word are used, and remove the bad words
+
+ 
+```{r}
+# Load bad words text file
+con <- file("bad-words.txt")
+bad.words <- readLines(con, warn=FALSE, encoding='latin-1' )
+close(con)
+rm(con)
+
+# preprocess bad-words to remove punctuation, switch to lower case, etc.
+bad.words <- unlist(text2word(bad.words))
+
+bad.int <- intersect(bad.words, bigworddf$word)
+
+bad.df <- bigworddf[bigworddf$word %in% bad.int,]
+
+bigworddf <- bigworddf[!(bigworddf$word %in% bad.int),]
+```
 
 
 
 ####  Don't forget to save the desired vector of words.
 
 ```{r}
-dictionaryWordsVector <- bigworddf$word[1:1000]
+dictionaryWordsVector <- bigworddf$word[1:3500]
 save(dictionaryWordsVector, file='good_words.Rdata')
 dictionaryWordsVector
 ```

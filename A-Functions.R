@@ -30,29 +30,17 @@ gen.complex.df <- function(){
       complex.df <- read.csv(strip.white=TRUE, as.is = TRUE, 
                               text="alias,complex,grep
 qqzz001,not-tracked,'qqzzz'
-qqzz002,number,'[$]?[0-9]+(.[0-9]+)*'
-qqzz003,M.,     'M[.]'
+qqzz002,empty,'qqzzz'
+qqzz003,number,'[$]?[0-9]+(.[0-9]+)*([Tt][Hh]|[Ss][Tt]|[Rr][Dd]|[Aa][Mm]|[Pp][Mm]|[Tt]|[Dd]|[Hh]|[Mm]|[Ss]|[Kk])*'
 qqzz004,Mr.,    '[Mm]r[.]'
 qqzz005,Ms.,    '[Mm]s[.]'
 qqzz006,Mrs.,   '[Mm]rs[.]'
-qqzz007,P.S.,   '[Pp][.][Ss][.]'
-qqzz008,vs.,    '[Vv][Ss][.]'
-qqzz009,c.c.,    '[Cc][.][Cc][.]'
-qqzz010,a.m.,   '[Aa][.][Mm][.]'
-qqzz011,p.m.,   '[Pp][.][Mm][.]'
-qqzz012,A.D.,   '[Aa][.][Dd][.]'
-qqzz013,B.C.,   '[Bb][.][Cc][.]'
-qqzz014,isn\'t, '[Ii]sn\\'t'   
-qqzz015,I\'m,   '[Ii]\\'m'
-qqzz016,it\'s,  '[Ii]t\\'s'
-qqzz017,don\'t, '[Dd]on\\'t'
-qqzz018,we\'re, '[Ww]e\\'re'
-qqzz019,hadn\'t,'[Hh]adn\\'t'
-qqzz020,they\'re,'[Tt]hey\\'re'
-qqzz021,hasn\'t,'[Hh]asn\\'t'
-qqzz022,that\'s, '[Tt]hat\\'s'
-qqzz023,ain\'t, '[Aa]in\\'t'
-qqzz023,Wi-Fi, '[Ww][Ii][-]?[Ff][Ii]'
+qqzz007,isn\'t, '[Ii]sn\\'t'   
+qqzz008,I\'m,   '[Ii]\\'m'
+qqzz009,it\'s,  '[Ii]t\\'s'
+qqzz010,don\'t, '[Dd]on\\'t'
+qqzz011,that\'s, '[Tt]hat\\'s'
+qqzz012,ain\'t, '[Aa]in\\'t'
 ")
      save(complex.df, file="complex.Rdata")
      complex.df
@@ -167,7 +155,7 @@ gen.p.df <- function(){
 # code2df <- function(code.v) {
 # # Routine for inserting a code vector into the prediction data frame
 #       # insert 3 pre-words and return
-#       code.v <- c(0,0,0,code.v)
+#       code.v <- c(2,2,2,code.v)
 #       
 #       # break sentance vector into temporary data frame of 4 grams
 #       t.df <- data.frame(w2 = integer(), w1 = integer(), w0 = integer(), wp = integer(), freq = integer())
@@ -183,7 +171,7 @@ code2df <- function(code.v) {
       # Routine for inserting a code vector into the prediction data frame
       # insert 3 pre-words and return
       l=length(code.v)
-      code.v <- c(0,0,0,code.v)
+      code.v <- c(2,2,2,code.v)
       
       # break sentance vector into temporary data frame of 4 grams
       t.df <- data.frame(w2 = as.integer(code.v[1:l]), 
@@ -228,7 +216,7 @@ calc.predict <- function(codev, list.pdf){
 # return: a dataframe of predicted next words and their probabilities, sorted in decreasing probability.
       #verify codev length and lengthen if necessary, shorten to last three elements.
       l <- length(codev)
-      if (l < 3){ codev <- c(0,0,0, codev) }
+      if (l < 3){ codev <- c(2,2,2, codev) }
       code <- tail(codev,3)
       
       # retrieve prediction matrix subset based on w0

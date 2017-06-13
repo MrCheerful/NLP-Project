@@ -111,7 +111,7 @@ for (i in seq_along(test.df$w2)){
       # get vector from which to predict next word
       codev <- as.integer(test.df[i,1:3])
       
-      if (codev[3]==0){codev[3]<-1L}
+#      if (codev[3]==0){codev[3]<-1L}
 
       # get the prediction set
       s1 <- system.time(pred.df <- calc.predict(codev, list.pdf))
@@ -138,6 +138,7 @@ run.info
 
 
 ```{r}
+run.info
 
 ```
 

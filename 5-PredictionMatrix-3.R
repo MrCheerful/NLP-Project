@@ -13,7 +13,7 @@
 
 #library(ggplot2); 
 #library(parallel); 
-#library(dplyr); 
+library(dplyr); 
 #library(RWeka); 
 #library(magrittr); 
 #library(tm); 
@@ -109,7 +109,8 @@ process.text <- function(textcorpus, p.df, logname){
 FileList <- data.frame(name=as.character(dir('data-3-split')), stringsAsFactors=FALSE)
 #FileListV <- c(FileList[4:8,1], FileList[12:16,1], FileList[20:24,1])
 FileListV <- c(FileList[c(12,4,20,13,5,21),1])
-               
+#FileListV <- c(FileList[c(12),1])              
+
 # Loop around training set files
 
 for ( a in seq_along(FileListV)) {

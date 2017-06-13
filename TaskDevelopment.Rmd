@@ -386,3 +386,143 @@ The goal of this exercise is to "pitch" your data product to your boss or an inv
 
 The Rstudio presentation information is available here (https://support.rstudio.com/hc/en-us/articles/200486468-Authoring-R-Presentations).
 
+
+
+2017-06-02 It's June and I don't have a working prediction engine yet!!!!   Aarg.
+
+Task 1 - find the 'complex' words
+
+```{r}
+
+FileList <- data.frame(name=as.character(dir('data-3-split')), stringsAsFactors=FALSE)
+FileListV <- c(FileList[12:16,1], FileList[4:8,1], FileList[20:24,1])
+
+# Loop around training set files
+
+complex <- character(0)
+
+for ( a in seq_along(FileListV)) {
+      
+      ## Load the training dataset
+      con <- file(paste0('./data-3-split/',FileListV[a]))
+      #text <- readLines(con, warn=FALSE, encoding='UTF-8' )
+      textV <- readLines(con, warn=FALSE, encoding='latin-1' )
+      close(con)
+      rm(con)
+
+      cat("Processing ",FileListV[a], " ")
+      
+      ## Parse the training set
+      for (i in seq_along(textV)){
+            # split into words
+            wordV <- unlist(stri_split_fixed(textV[i], " "))
+            
+            # add words with non-letter characters to complex
+            for (j in seq_along(wordV)){
+                  if (nchar(str_replace_all(wordV[j], 
+                                             pattern = '[[:alpha:]]',
+                                             ''))>0) {
+                        complex <- c(complex,wordV[j])
+                  }
+            }
+            
+            
+      }
+      save(complex, file="complexWordList.Rdata")
+      cat("Completed: ",FileListV[a],".  ") ; print(".")
+}
+
+
+
+
+```
+
+Task 1A - Review complex words to build out complex.df the data frame for conversions complex2alias and alias2complex
+
+
+
+```{r}
+head(complex,100)
+
+```
+
+## Testing of complex to alias conversions
+
+```{r}
+rm(complex.df)
+unlink("complex.Rdata")
+complex.df <- gen.complex.df()
+
+test1 <- c("Mr. I'm the 24:07 guy 89 times ain't bad Mr. mr.mr. Mrs.mrs.","Mr. 234.5 isn't here.","Ramadan amplifies in the am a.m. amazi'm hungry pamins.")
+
+complex2alias(test1, complex.df)
+```
+
+## Testing of alias2complex
+
+```{r}
+text2 <- c("qqzz004", "qqzz018", "not", "gumbo", "qqzz004 qqzz020 in a cat")
+alias2complex(text2,complex.df)
+```
+
+### Testing of word code dictionary
+
+```{r}
+word.dict <- gen.word.dict()
+
+test3 <- c("at", "a", "long", "the", "qqzz004", "gumbo", "edmontonian")
+
+word2code(test3, word.dict)
+
+test4 <- c(1, 3, 0, 345,1002, 10, 25, 0)
+
+code2word(test4, word.dict)
+```
+
+### Testing of text2word
+
+```{r}
+text2word(test1)
+word2code(unlist(text2word(test1)), word.dict)
+```
+
+### How to use a matrix for storing data
+
+https://stackoverflow.com/questions/7352254/how-to-subset-matrix-to-one-column-maintain-matrix-data-type-maintain-row-colu?rq=1
+
+```{r}
+# create array
+ta <- array(data=0, dim=c(3,4,2), dimnames=list(c('x','y','z')))
+ta2<- array(data=as.integer(0), dim=c(3415,3415,3415), dimnames=list(c('x','y','z')))
+
+```
+
+```{r}
+library(Matrix)
+ta3 <- sparseMatrix(w=1:1000, x=1:1000, y=1:1000, z=1:1000)
+```
+
+Testing of code to DF function
+
+```{r}
+test5 <- c( 4, 15,  23,   1, 646,   1, 252,   1,   1,   4,   1,   1,   4,   1,  14, 124)
+t.df <- code2df(test5)
+t1.df <- t.df
+```
+
+Okay, now how to aggregate this
+
+```{r}
+library(dplyr)
+
+t.df <- bind_rows(t.df, t1.df) %>%
+      group_by(w2, w1, w0, wp) %>%
+      summarize(freq=sum(freq))
+t.df
+
+
+
+
+
+```
+
