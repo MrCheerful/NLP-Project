@@ -526,3 +526,32 @@ t.df
 
 ```
 
+
+
+## 2017-06-16 Crunch time
+Need to submit in a few days.  The recent work has gone well, prediction matrix performance is good, but the prediction routine needs a lot of tweaking.
+
+First what are the dimensions of the prediction data frames for each word in the dictionary.
+
+```{r}
+listdims <- lapply(list.pdf, dim)
+listdims <- unlist(lapply(listdims, head, n=1))
+tail(listdims,30)
+range(listdims)
+hist(listdims[listdims<500])
+listdims[listdims<40]
+
+```
+
+With the 3500 word dictionary there are 10 entries that have no entries in the prediction matrix.
+So I will need to have a backoff to handle these 10 cases.   Its simple enough, just tack
+"the and for that with" to the end of the predictions data frame, and I'll always have five predicitons.   The really stupid backoff algorithm.
+If I redo the dictionary, I could remove these 10 words.
+
+
+
+
+
+
+
+

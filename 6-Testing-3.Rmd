@@ -19,7 +19,7 @@ Load a text library to use for the testing.  For the test log also adjust the te
 ```{r}
 
 # Adjust this comment variable as appropriate for the log
-test.com <- "Out of sample"
+test.com <- "In sample"
 
 # Select the training sets to be processed
 FileList <- as.character(dir('data-3-split'))
@@ -28,7 +28,7 @@ FileList
 
 ```{r}
 
-FileTest <- FileList[c(17)]
+FileTest <- FileList[c(21)]
                
 # load the testing dataset
 
@@ -46,7 +46,7 @@ length(test.text)
 
 ```{r}
 set.seed(5)
-no.samples <- 30
+no.samples <- 10
 testV <- sample(test.text, no.samples)
 ```
 

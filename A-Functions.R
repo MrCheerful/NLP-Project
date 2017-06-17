@@ -29,9 +29,9 @@ gen.complex.df <- function(){
       
       complex.df <- read.csv(strip.white=TRUE, as.is = TRUE, 
                               text="alias,complex,grep
-qqzz001,not-tracked,'qqzzz'
-qqzz002,empty,'qqzzz'
-qqzz003,number,'[$]?[0-9]+(.[0-9]+)*([Tt][Hh]|[Ss][Tt]|[Rr][Dd]|[Aa][Mm]|[Pp][Mm]|[Tt]|[Dd]|[Hh]|[Mm]|[Ss]|[Kk])*'
+qqzz001,<not-in-list>,'qqzzz'
+qqzz002,<empty>,'qqzzz'
+qqzz003,<number>,'[$]?[0-9]+(.[0-9]+)*([Tt][Hh]|[Ss][Tt]|[Rr][Dd]|[Aa][Mm]|[Pp][Mm]|[Tt]|[Dd]|[Hh]|[Mm]|[Ss]|[Kk])*'
 qqzz004,Mr.,    '[Mm]r[.]'
 qqzz005,Ms.,    '[Mm]s[.]'
 qqzz006,Mrs.,   '[Mm]rs[.]'
@@ -203,11 +203,11 @@ pdf2listpdf <- function(p.df){
 
 # Prediction Functions
 
-textPredict <- function(inText, word.dict, p.df){
+textPredict <- function(inText, word.dict, list.pdf){
 # given an input text line, parse it and return a df with words and probabilities   
       wordv <- unlist(text2word(inText))
       codev <- word2code(wordv, word.dict)
-      p0.df <- calc.predict(codev, p.df)
+      p0.df <- calc.predict(codev, list.pdf)
       data.frame(word=code2word(p0.df$wp, word.dict),prob=p0.df$prob)
 }
 
@@ -220,7 +220,7 @@ calc.predict <- function(codev, list.pdf){
       code <- tail(codev,3)
       
       # retrieve prediction matrix subset based on w0
-      p.df <- list.pdf[[code[3]]]
+      p.df <- as.data.frame(list.pdf[[code[3]]])
       
       # subset prediction matrix with matches (0 backoff)
       p0.df <- filter(p.df, w2==code[1], w1==code[2]) #, w0==code[3])
@@ -233,9 +233,24 @@ calc.predict <- function(codev, list.pdf){
       # calculate probabilities
       p0.df <- mutate(p0.df, prob = (1-disc.p0)*freq/sum(freq))
       
-      # if l<6 then do a backoff - to be added
-      
-      arrange(p0.df,desc(prob))
+      # if l<6 then do a backoff
+      if (l<6) {
+          # create a backoff prediction
+          p1.df <- filter(p.df, w1==code[2])
+          p1.df <- mutate(p1.df, prob = (disc.p0)*freq/sum(freq))
+          
+          # add a really stupid backoff just in case
+          p2.df <- data.frame(w2=1L, w1=1L, w0=1L, 
+                              wp=word2code(c("the","and","for","that","with"),word.dict),
+                              freq=0L,prob=0.01)
+          
+          # combine prediction data.frames
+          p0.df <- bind_rows(p0.df, p1.df, p2.df) %>%
+              group_by(w0, wp) %>%
+              summarize(w2=0L, w1=0L, freq=sum(freq),prob=sum(prob))
+        }
+      # sort by decreasing probability
+      as.data.frame(arrange(p0.df,desc(prob)))
 }
 
 #----------------------------

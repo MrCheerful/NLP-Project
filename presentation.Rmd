@@ -1,0 +1,47 @@
+---
+title: "NLP Text Prediction"
+author: "MrCheerful"
+date: "June 17, 2017"
+output: ioslides_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## Introduction
+ 
+This demonstration shows the text prediction algorithm for the final project in a very popular Data Science MOOC.  
+ 
+The project deliverable is a model which predicts the next word for an incomplete sentence in a text input field.  
+
+ 
+## Algorithm Features:
+ 
+* Built for fast response using only base R, dplyr and stringr.
+
+* Trained with 10% of the provided corpus (mix of news, blog and twitter).
+
+* The current dictionary contains 3500 words (80% of words used in training).
+
+* Prediction is based on four-grams, the first three words predicting the fourth.
+
+* A "REALLY stupid backoff algorithm" based on the Katz backoff with k=5 is used when four-gram fails to predict.
+
+* An average prediction time of 0.55s was achieved during testing.
+
+ 
+## Instructions
+ 
+* Layout is similar to entering a text message on any current smartphone.
+
+* Simply enter text in the text box and the top 5 predicted next words will appear above the text box.
+
+ 
+## Give it a try
+ 
+[Demonstration](https://mrcheerful.shinyapps.io/InLineTextPredictor/)
+
+[Source Code on github](https://github.com/MrCheerful/NLP-Project)
+ 
+
